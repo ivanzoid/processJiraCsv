@@ -44,6 +44,7 @@ func main() {
 	summaryIndex := -1
 	issudIdIndex := -1
 	parentIdIndex := -1
+	issueTypeIndex := -1
 	originalEstimateIndex := -1
 	for index, item := range firstLine {
 		if strings.EqualFold(item, "Summary") {
@@ -52,6 +53,8 @@ func main() {
 			issudIdIndex = index
 		} else if strings.EqualFold(item, "Parent ID") {
 			parentIdIndex = index
+		} else if strings.EqualFold(item, "Issue Type") {
+			issueTypeIndex = index
 		} else if strings.EqualFold(item, "Original Estimate") {
 			originalEstimateIndex = index
 		}
@@ -77,7 +80,7 @@ func main() {
 
 		recordLength := len(*record)
 
-		if recordLength < summaryIndex || recordLength < issudIdIndex || recordLength < parentIdIndex {
+		if recordLength < summaryIndex || recordLength < issudIdIndex || recordLength < parentIdIndex || recordLength < issueTypeIndex {
 			continue
 		}
 
@@ -104,6 +107,7 @@ func main() {
 
 		if len(parentIdString) != 0 {
 			summaryString = fmt.Sprintf("%s | %s", currentParentIssueSummary, summaryString)
+			(*record)[issueTypeIndex] = "Sub-task"
 		}
 
 		summaryString = fmt.Sprintf("iOS | %s", summaryString)
@@ -117,7 +121,7 @@ func main() {
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "Can't parse Original Estimate at line %d (%s)\n", index, originalEstimateString)
 				} else {
-					estimate *= 3600000 // Jira expects milliseconds, csv contains hours
+					estimate *= 60 * 3600 // Jira expects magic values (1/4 minute intervals), csv contains hours
 					originalEstimateString = fmt.Sprintf("%d", estimate)
 				}
 				(*record)[originalEstimateIndex] = originalEstimateString
